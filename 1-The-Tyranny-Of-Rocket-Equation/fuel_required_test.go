@@ -16,7 +16,7 @@ func TestMass12(t *testing.T) {
 }
 
 func TestMass14(t *testing.T) {
-	fuelRequiredTest(2, 12, t)
+	fuelRequiredTest(2, 14, t)
 }
 
 func TestMass1969(t *testing.T) {

@@ -11,8 +11,16 @@ func fuelRequired(mass int) int {
 	return (mass / 3) - 2
 }
 
+func fuelRequiredRecursive(mass int) int {
+	sum := 0
+	for tmp := fuelRequired(mass); tmp >= 0; tmp = fuelRequired(tmp) {
+		sum += tmp
+	}
+	return sum
+}
+
 func main() {
-	file, err := os.Open("part1_input.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +34,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		sum += fuelRequired(i)
+		sum += fuelRequiredRecursive(i)
 	}
 
 	if err := scanner.Err(); err != nil {
