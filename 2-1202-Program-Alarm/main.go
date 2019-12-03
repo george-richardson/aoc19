@@ -23,17 +23,24 @@ func main() {
 	}
 	program := scanner.Text()
 
-	output, err := executeProgram(program)
-	if err != nil {
-		log.Fatal(err)
+	var answer int
+
+outer:
+	for i := 0; i < 100; i++ {
+		for j := 0; j < 100; j++ {
+			_, output, err := executeProgramWithParams(program, i, j)
+			log.Printf("p1: %v p2: %v o: %v", i, j, output)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if output == 19690720 {
+				answer = 100*i + j
+				break outer
+			}
+		}
 	}
 
-	intArr, err := strToIntArr(output)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	println(intArr[0])
+	println(answer)
 }
 
 func executeProgramStep(program *[]int, address int) (int, bool, error) {
@@ -66,6 +73,20 @@ func executeProgram(program string) (string, error) {
 		return "err", err
 	}
 	return intArrToStr(progArr), err
+}
+
+func executeProgramWithParams(program string, param1 int, param2 int) (string, int, error) {
+	progArr, err := strToIntArr(program)
+	progArr[1] = param1
+	progArr[2] = param2
+	halt := false
+	for address := 0; !halt && err == nil; address += 4 {
+		_, halt, err = executeProgramStep(&progArr, address)
+	}
+	if err != nil {
+		return "err", -1, err
+	}
+	return intArrToStr(progArr), progArr[0], err
 }
 
 func strToIntArr(str string) ([]int, error) {
