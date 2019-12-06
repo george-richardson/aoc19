@@ -29,15 +29,30 @@ func validatePasscode(in int) bool {
 
 	last := 99
 	repeated := false
+	repeatedTwice := false
+	validRepeatExists := false
 	for _, c := range columns {
 		if c > last {
 			return false
 		}
 		if c == last {
+			if repeated {
+				repeatedTwice = true
+			}
 			repeated = true
+		} else if repeated && !repeatedTwice {
+			validRepeatExists = true
+			repeated = false
+			repeatedTwice = false
+		} else {
+			repeated = false
+			repeatedTwice = false
 		}
 		last = c
 	}
+	if repeated && !repeatedTwice {
+		validRepeatExists = true
+	}
 
-	return repeated
+	return validRepeatExists
 }
