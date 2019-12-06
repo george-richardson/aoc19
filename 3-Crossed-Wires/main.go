@@ -32,6 +32,12 @@ type wire struct {
 	origin point
 }
 
+type intersection struct {
+	point point
+	stepsFromOrigin int
+	distanceFromOrigin int
+}
+
 // Translation methods
 func parseTranslation(token string) (translation, error) {
 	result := translation{}
@@ -97,15 +103,55 @@ func (wire *wire) appendTranslation(translation translation) {
 	wire.head = wire.path[len(wire.path) -1]
 }
 
-func (w1 wire) firstIntersectionWith(w2 wire) (point, error) {
-	for _, p1 := range w1.path {
-		for _, p2 := range w2.path {
+func (w1 wire) getIntersections(w2 wire) ([]intersection, error) {
+	var intersections []intersection
+	for i, p1 := range w1.path {
+		for j, p2 := range w2.path {
 			if p1 == p2 {
-				return p1, nil
+				intersections = append(intersections, intersection{
+					point:              p1,
+					stepsFromOrigin:    i + j + 2, //Add two because the array is zero based
+					distanceFromOrigin: w1.origin.distanceTo(p1),
+				})
 			}
 		}
 	}
-	return point{}, fmt.Errorf("unable to find intersection")
+	if len(intersections) == 0 {
+		return intersections, fmt.Errorf("unable to find intersections")
+	}
+	return intersections, nil
+}
+
+func (w1 wire) findManhattanClosestIntersection(w2 wire) (intersection, error) {
+	intersections, err := w1.getIntersections(w2)
+	if err != nil {
+		return intersection{}, err
+	}
+
+	closest := intersections[0]
+	for _, intersection := range intersections {
+		if intersection.distanceFromOrigin < closest.distanceFromOrigin {
+			closest = intersection
+		}
+	}
+
+	return closest, nil
+}
+
+func (w1 wire) findStepsClosestIntersection(w2 wire) (intersection, error) {
+	intersections, err := w1.getIntersections(w2)
+	if err != nil {
+		return intersection{}, err
+	}
+
+	closest := intersections[0]
+	for _, intersection := range intersections {
+		if intersection.stepsFromOrigin < closest.stepsFromOrigin {
+			closest = intersection
+		}
+	}
+
+	return closest, nil
 }
 
 func parseWire(str string) wire {
@@ -139,8 +185,8 @@ func main() {
 	scanner.Scan()
 	wire2 := parseWire(scanner.Text())
 
-	intersection, _ := wire1.firstIntersectionWith(wire2)
+	intersection, _ := wire1.findStepsClosestIntersection(wire2)
 
-	answer := intersection.distanceTo(point{x: 0,y: 0})
+	answer := intersection.stepsFromOrigin
 	fmt.Println(answer)
 }
